@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require 'vendor/autoload.php';
+
+use App\Commands\CalculateCommissions;
+use App\Services\CommissionCalculator\CommissionCalculator;
+use App\Services\CountryCodeProvider\CountryCodeProvider;
+use App\Services\CurrencyRateProvider\CurrencyRateProvider;
+use App\Services\TransactionsParser\TransactionsParser;
+use GuzzleHttp\Client;
+use Symfony\Component\Console\Application;
+
+// the apiKey should be retrieved from an environment variable
+$apiKey = '2q6zfYOPkT0xHY8YP0wQHPgCgxeaZMJQ';
+
+$application = new Application();
+
+$httpClient = new Client();
+
+$application->add(
+    new CalculateCommissions(
+        new TransactionsParser(),
+        new CommissionCalculator(new CountryCodeProvider($httpClient), new CurrencyRateProvider($httpClient, $apiKey))
+    )
+);
+
+$application->run();
